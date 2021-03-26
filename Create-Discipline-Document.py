@@ -7,7 +7,7 @@ import traceback
 import os
 import gettext
 
-commandIdOnPanel = 'Create Disciplin Document...'
+commandIdOnPanel = 'Create-Discipline-Document'
 panelId = 'SolidCreatePanel'
 doc_seed = 'seed'
 doc_title = 'testing'
