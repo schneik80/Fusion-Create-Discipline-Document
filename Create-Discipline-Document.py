@@ -189,8 +189,13 @@ def run(context):
                     dropDownItems_.add(_('Render'), False)
                     dropDownItems_.add(_('Animation'), False)
 
-                    commandInputs_.addStringValueInput(
-                        'stringValueInput_', _('Name'), _(doc_title_))
+                    boolCommandInput = commandInputs_.addBoolValueInput(
+                        'boolvalueInput_', _('Auto-Name'), True)
+                    boolCommandInput.value = True
+
+                    sringDocName = commandInputs_.addStringValueInput(
+                        'stringValueInput_', _('Name'), _(doc_title))
+                    sringDocName.isEnabled = False
 
                 except:
                     if ui:
