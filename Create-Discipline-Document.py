@@ -11,6 +11,9 @@ commandIdOnPanel = 'Create-Discipline-Document'
 panelId = 'SolidCreatePanel'
 doc_seed = 'seed'
 doc_title = 'testing'
+dropDownCommandInput_ = adsk.core.DropDownCommandInput.cast(None)
+boolvalueInput_ = adsk.core.BoolValueCommandInput.cast(None)
+foo = 1
 
 
 # global set of event handlers to keep them referenced for the duration of the command
@@ -99,7 +102,7 @@ def run(context):
         app = adsk.core.Application.get()
         doc_a = app.activeDocument
         doc_seed = doc_a.name
-        doc_title = 'MFG Doc from' + doc_seed
+        doc_title = 'New Doc from ' + doc_seed
 
         class InputChangedHandler(adsk.core.InputChangedEventHandler):
             def __init__(self):
@@ -111,15 +114,20 @@ def run(context):
                     cmdInput = args.input
 
                     if cmdInput.id == dropDownCommandInput_:
-                        if dropDownCommandInput_.selectedItem == 'Manufacturing':
+                        if foo == 1:
+                            # if cmdInput.selectedItem.name == 'Manufacturing':
                             ui.messageBox(_('MFG').format(
                                 command.parentCommandDefinition.id))
                         else:
-                            ui.messageBox(_('else').format(
+                            ui.messageBox(_('Else').format(
                                 command.parentCommandDefinition.id))
 
-                        ui.messageBox(_('Input: {} changed event triggered').format(
-                            command.parentCommandDefinition.id))
+                    if cmdInput.id == boolvalueInput_:
+                        if cmdInput.value == true:
+                            sringDocName.isEnabled = False
+                        else:
+                            sringDocName.isEnabled = True
+
                     else:
 
                         ui.messageBox(_('Input: {} changed event triggered').format(
@@ -141,7 +149,7 @@ def run(context):
                     doc_b = app.documents.add(
                         adsk.core.DocumentTypes.FusionDesignDocumentType)
 
-                    doc_b.saveAs(doc_title_,
+                    doc_b.saveAs(doc_title,
                                  doc_a.dataFile.parentFolder, "Auto created by related data add-in", '')
 
                     transform = adsk.core.Matrix3D.create()
@@ -179,9 +187,9 @@ def run(context):
 
                     commandInputs_ = cmd.commandInputs
 
-                    dropDownCommandInput_ = commandInputs_.addDropDownCommandInput(
-                        'dropdownCommandInput', _('Type'), adsk.core.DropDownStyles.LabeledIconDropDownStyle)
-                    dropDownItems_ = dropDownCommandInput_.listItems
+                    dropDownCommandInput = commandInputs_.addDropDownCommandInput(
+                        'dropDownCommandInput_', _('Type'), adsk.core.DropDownStyles.LabeledIconDropDownStyle)
+                    dropDownItems_ = dropDownCommandInput.listItems
                     dropDownItems_.add(_('Assembly'), True)
                     dropDownItems_.add(_('Manufacturing'), False)
                     dropDownItems_.add(_('Simulation'), False)
