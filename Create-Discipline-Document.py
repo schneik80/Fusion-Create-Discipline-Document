@@ -13,7 +13,6 @@ doc_seed = 'seed'
 doc_title = 'testing'
 dropDownCommandInput_ = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput_ = adsk.core.BoolValueCommandInput.cast(None)
-foo = 1
 
 
 # global set of event handlers to keep them referenced for the duration of the command
@@ -114,8 +113,7 @@ def run(context):
                     cmdInput = args.input
 
                     if cmdInput.id == dropDownCommandInput_:
-                        if foo == 1:
-                            # if cmdInput.selectedItem.name == 'Manufacturing':
+                        if cmdInput.selectedItem.name == 'Manufacturing':
                             ui.messageBox(_('MFG').format(
                                 command.parentCommandDefinition.id))
                         else:
@@ -130,7 +128,7 @@ def run(context):
 
                     else:
 
-                        ui.messageBox(_('Input: {} changed event triggered').format(
+                        ui.messageBox(_('Fnput: {} changed event triggered').format(
                             command.parentCommandDefinition.id))
 
                 except:
