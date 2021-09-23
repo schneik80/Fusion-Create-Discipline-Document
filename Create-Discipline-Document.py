@@ -1,5 +1,5 @@
-# Author-Autodesk Inc.
-# Description-This is sample addin.
+# Author-schneik.
+# Description-This is addin to take the active design document tab and insert into a new document as a child. the new document is named based on a user selection to help capture intent.
 
 import adsk.core
 import adsk.fusion
@@ -7,10 +7,10 @@ import traceback
 import os
 import gettext
 
-commandIdOnPanel = 'Create-Discipline-Document'
-panelId = 'SolidCreatePanel'
-doc_seed = 'seed'
-doc_title = 'testing'
+commandIdOnPanel = "Create-Discipline-Document"
+panelId = "SolidCreatePanel"
+doc_seed = "seed"
+doc_title = "testing"
 dropDownCommandInput_ = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput_ = adsk.core.BoolValueCommandInput.cast(None)
 
@@ -39,22 +39,25 @@ def getUserLanguage():
         adsk.core.UserLanguages.PolishLanguage: "pl-PL",
         adsk.core.UserLanguages.PortugueseBrazilianLanguage: "pt-BR",
         adsk.core.UserLanguages.RussianLanguage: "ru-RU",
-        adsk.core.UserLanguages.SpanishLanguage: "es-ES"
+        adsk.core.UserLanguages.SpanishLanguage: "es-ES",
     }[app.preferences.generalPreferences.userLanguage]
+
 
 # Get loc string by language
 
 
 def getLocStrings():
     currentDir = os.path.dirname(os.path.realpath(__file__))
-    return gettext.translation('resource', currentDir, [getUserLanguage(), "en-US"]).gettext
+    return gettext.translation(
+        "resource", currentDir, [getUserLanguage(), "en-US"]
+    ).gettext
 
 
 def commandDefinitionById(id):
     app = adsk.core.Application.get()
     ui = app.userInterface
     if not id:
-        ui.messageBox(_('commandDefinition id is not specified'))
+        ui.messageBox(_("commandDefinition id is not specified"))
         return None
     commandDefinitions_ = ui.commandDefinitions
     commandDefinition_ = commandDefinitions_.itemById(id)
@@ -65,10 +68,10 @@ def commandControlByIdForPanel(id):
     app = adsk.core.Application.get()
     ui = app.userInterface
     if not id:
-        ui.messageBox(_('commandControl id is not specified'))
+        ui.messageBox(_("commandControl id is not specified"))
         return None
     workspaces_ = ui.workspaces
-    modelingWorkspace_ = workspaces_.itemById('FusionSolidEnvironment')
+    modelingWorkspace_ = workspaces_.itemById("FusionSolidEnvironment")
     toolbarPanels_ = modelingWorkspace_.toolbarPanels
     toolbarPanel_ = toolbarPanels_.itemById(panelId)
     toolbarControls_ = toolbarPanel_.controls
@@ -81,7 +84,7 @@ def destroyObject(uiObj, tobeDeleteObj):
         if tobeDeleteObj.isValid:
             tobeDeleteObj.deleteMe()
         else:
-            uiObj.messageBox(_('tobeDeleteObj is not a valid object'))
+            uiObj.messageBox(_("tobeDeleteObj is not a valid object"))
 
 
 def run(context):
@@ -93,15 +96,15 @@ def run(context):
         global _
         _ = getLocStrings()
 
-        commandName = _('Create Related Document')
-        commandDescription = _('Create Related Document')
-        commandResources = './resources'
-        iconResources = './resources'
+        commandName = _("Create Related Document")
+        commandDescription = _("Create Related Document")
+        commandResources = "./resources"
+        iconResources = "./resources"
 
         app = adsk.core.Application.get()
         doc_a = app.activeDocument
         doc_seed = doc_a.name
-        doc_title = 'New Doc from ' + doc_seed
+        doc_title = "New Doc from " + doc_seed
 
         class InputChangedHandler(adsk.core.InputChangedEventHandler):
             def __init__(self):
@@ -113,28 +116,36 @@ def run(context):
                     cmdInput = args.input
 
                     if cmdInput.id == dropDownCommandInput_:
-                        if cmdInput.selectedItem.name == 'Manufacturing':
-                            ui.messageBox(_('MFG').format(
-                                command.parentCommandDefinition.id))
+                        if cmdInput.selectedItem.name == "Manufacturing":
+                            ui.messageBox(
+                                _("MFG").format(command.parentCommandDefinition.id)
+                            )
                         else:
-                            ui.messageBox(_('Else').format(
-                                command.parentCommandDefinition.id))
+                            ui.messageBox(
+                                _("Else").format(command.parentCommandDefinition.id)
+                            )
 
                     if cmdInput.id == boolvalueInput_:
                         if cmdInput.value == true:
-                            sringDocName.isEnabled = False
+                            stringDocName.isEnabled = False
                         else:
-                            sringDocName.isEnabled = True
+                            stringDocName.isEnabled = True
 
                     else:
 
-                        ui.messageBox(_('Fnput: {} changed event triggered').format(
-                            command.parentCommandDefinition.id))
+                        ui.messageBox(
+                            _("Input: {} changed event triggered").format(
+                                command.parentCommandDefinition.id
+                            )
+                        )
 
                 except:
                     if ui:
-                        ui.messageBox(_('Input changed event failed: {}').format(
-                            traceback.format_exc()))
+                        ui.messageBox(
+                            _("Input changed event failed: {}").format(
+                                traceback.format_exc()
+                            )
+                        )
 
         class CommandExecuteHandler(adsk.core.CommandEventHandler):
             def __init__(self):
@@ -145,25 +156,38 @@ def run(context):
                     command = args.firingEvent.sender
                     doc_a.activate()
                     doc_b = app.documents.add(
-                        adsk.core.DocumentTypes.FusionDesignDocumentType)
+                        adsk.core.DocumentTypes.FusionDesignDocumentType
+                    )
 
-                    doc_b.saveAs(doc_title,
-                                 doc_a.dataFile.parentFolder, "Auto created by related data add-in", '')
+                    doc_b.saveAs(
+                        doc_title,
+                        doc_a.dataFile.parentFolder,
+                        "Auto created by related data add-in",
+                        "",
+                    )
 
                     transform = adsk.core.Matrix3D.create()
                     design_b = adsk.fusion.Design.cast(
-                        doc_b.products.itemByProductType("DesignProductType"))
+                        doc_b.products.itemByProductType("DesignProductType")
+                    )
                     design_b.rootComponent.occurrences.addByInsert(
-                        doc_a.dataFile, transform, True)
+                        doc_a.dataFile, transform, True
+                    )
 
                     doc_b.save("Auto saved by related data add-in")
 
-                    ui.messageBox(_('command: {} executed successfully').format(
-                        command.parentCommandDefinition.id))
+                    ui.messageBox(
+                        _("command: {} executed successfully").format(
+                            command.parentCommandDefinition.id
+                        )
+                    )
                 except:
                     if ui:
-                        ui.messageBox(_('command executed failed: {}').format(
-                            traceback.format_exc()))
+                        ui.messageBox(
+                            _("command executed failed: {}").format(
+                                traceback.format_exc()
+                            )
+                        )
 
         class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             def __init__(self):
@@ -172,7 +196,7 @@ def run(context):
             def notify(self, args):
                 try:
                     cmd = args.command
-                    cmd.helpFile = 'help.html'
+                    cmd.helpFile = "help.html"
 
                     onExecute = CommandExecuteHandler()
                     cmd.execute.add(onExecute)
@@ -186,58 +210,69 @@ def run(context):
                     commandInputs_ = cmd.commandInputs
 
                     dropDownCommandInput = commandInputs_.addDropDownCommandInput(
-                        'dropDownCommandInput_', _('Type'), adsk.core.DropDownStyles.LabeledIconDropDownStyle)
+                        "dropDownCommandInput_",
+                        _("Type"),
+                        adsk.core.DropDownStyles.LabeledIconDropDownStyle,
+                    )
                     dropDownItems_ = dropDownCommandInput.listItems
-                    dropDownItems_.add(_('Assembly'), True)
-                    dropDownItems_.add(_('Manufacturing'), False)
-                    dropDownItems_.add(_('Simulation'), False)
-                    dropDownItems_.add(_('Gennerative'), False)
-                    dropDownItems_.add(_('Render'), False)
-                    dropDownItems_.add(_('Animation'), False)
+                    dropDownItems_.add(_("Assembly"), True)
+                    dropDownItems_.add(_("Manufacturing"), False)
+                    dropDownItems_.add(_("Simulation"), False)
+                    dropDownItems_.add(_("Gennerative"), False)
+                    dropDownItems_.add(_("Render"), False)
+                    dropDownItems_.add(_("Animation"), False)
 
                     boolCommandInput = commandInputs_.addBoolValueInput(
-                        'boolvalueInput_', _('Auto-Name'), True)
+                        "boolvalueInput_", _("Auto-Name"), True
+                    )
                     boolCommandInput.value = True
 
-                    sringDocName = commandInputs_.addStringValueInput(
-                        'stringValueInput_', _('Name'), _(doc_title))
-                    sringDocName.isEnabled = False
+                    stringDocName = commandInputs_.addStringValueInput(
+                        "stringValueInput_", _("Name"), _(doc_title)
+                    )
+                    stringDocName.isEnabled = False
 
                 except:
                     if ui:
-                        ui.messageBox(_('Panel command created failed: {}').format(
-                            traceback.format_exc()))
+                        ui.messageBox(
+                            _("Panel command created failed: {}").format(
+                                traceback.format_exc()
+                            )
+                        )
 
         commandDefinitions_ = ui.commandDefinitions
 
         # add a command on create panel in modeling workspace
         workspaces_ = ui.workspaces
-        modelingWorkspace_ = workspaces_.itemById('FusionSolidEnvironment')
+        modelingWorkspace_ = workspaces_.itemById("FusionSolidEnvironment")
         toolbarPanels_ = modelingWorkspace_.toolbarPanels
         # add the new command under the CREATE panel
         toolbarPanel_ = toolbarPanels_.itemById(panelId)
         toolbarControlsPanel_ = toolbarPanel_.controls
         toolbarControlPanel_ = toolbarControlsPanel_.itemById(commandIdOnPanel)
         if not toolbarControlPanel_:
-            commandDefinitionPanel_ = commandDefinitions_.itemById(
-                commandIdOnPanel)
+            commandDefinitionPanel_ = commandDefinitions_.itemById(commandIdOnPanel)
             if not commandDefinitionPanel_:
                 commandDefinitionPanel_ = commandDefinitions_.addButtonDefinition(
-                    commandIdOnPanel, commandName, commandDescription, commandResources)
+                    commandIdOnPanel, commandName, commandDescription, commandResources
+                )
             onCommandCreated = CommandCreatedEventHandlerPanel()
             commandDefinitionPanel_.commandCreated.add(onCommandCreated)
             # keep the handler referenced beyond this function
             handlers.append(onCommandCreated)
             toolbarControlPanel_ = toolbarControlsPanel_.addCommand(
-                commandDefinitionPanel_)
+                commandDefinitionPanel_
+            )
             toolbarControlPanel_.isVisible = True
             ui.messageBox(
-                _('Command is successfully added to the create panel in modeling workspace'))
+                _(
+                    "Command is successfully added to the create panel in modeling workspace"
+                )
+            )
 
     except:
         if ui:
-            ui.messageBox(_('AddIn Start Failed: {}').format(
-                traceback.format_exc()))
+            ui.messageBox(_("AddIn Start Failed: {}").format(traceback.format_exc()))
 
 
 def stop(context):
@@ -260,5 +295,4 @@ def stop(context):
 
     except:
         if ui:
-            ui.messageBox(_('AddIn Stop Failed: {}').format(
-                traceback.format_exc()))
+            ui.messageBox(_("AddIn Stop Failed: {}").format(traceback.format_exc()))
