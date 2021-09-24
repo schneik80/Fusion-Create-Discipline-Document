@@ -7,13 +7,12 @@ import traceback
 import os
 import gettext
 
-commandIdOnPanel = 'Create-Discipline-Document'
+commandIdOnPanel = 'Create Discipline Document'
 panelId = 'SolidCreatePanel'
 doc_seed = 'seed'
 doc_title = 'testing'
-dropDownCommandInput_ = adsk.core.DropDownCommandInput.cast(None)
+dropDownCommandInput = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput_ = adsk.core.BoolValueCommandInput.cast(None)
-
 
 # global set of event handlers to keep them referenced for the duration of the command
 handlers = []
@@ -112,24 +111,24 @@ def run(context):
                     command = args.firingEvent.sender
                     cmdInput = args.input
 
-                    if cmdInput.id == dropDownCommandInput_:
+                    if cmdInput.id == 'dropDownCommandInput':
                         if cmdInput.selectedItem.name == 'Manufacturing':
                             ui.messageBox(_('MFG').format(
                                 command.parentCommandDefinition.id))
                         else:
-                            ui.messageBox(_('Else').format(
+                            ui.messageBox(_('Other').format(
                                 command.parentCommandDefinition.id))
 
-                    if cmdInput.id == boolvalueInput_:
-                        if cmdInput.value == true:
+                    if cmdInput.id == 'boolvalueInput_':
+                        if boolvalueInput_.value == True:
                             sringDocName.isEnabled = False
                         else:
                             sringDocName.isEnabled = True
 
-                    else:
+                    # else:
 
-                        ui.messageBox(_('Fnput: {} changed event triggered').format(
-                            command.parentCommandDefinition.id))
+                        # ui.messageBox(_('Input: {} changed event triggered').format(
+                            # command.parentCommandDefinition.id))
 
                 except:
                     if ui:
@@ -186,7 +185,7 @@ def run(context):
                     commandInputs_ = cmd.commandInputs
 
                     dropDownCommandInput = commandInputs_.addDropDownCommandInput(
-                        'dropDownCommandInput_', _('Type'), adsk.core.DropDownStyles.LabeledIconDropDownStyle)
+                        'dropDownCommandInput', _('Type'), adsk.core.DropDownStyles.LabeledIconDropDownStyle)
                     dropDownItems_ = dropDownCommandInput.listItems
                     dropDownItems_.add(_('Assembly'), True)
                     dropDownItems_.add(_('Manufacturing'), False)
