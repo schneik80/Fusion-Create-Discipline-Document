@@ -10,9 +10,10 @@ import gettext
 commandIdOnPanel = 'Create Discipline Document'
 panelId = 'SolidCreatePanel'
 doc_seed = 'seed'
-doc_title = 'testing'
+doc_title_ = 'testing'
 dropDownCommandInput = adsk.core.DropDownCommandInput.cast(None)
-boolvalueInput_ = adsk.core.BoolValueCommandInput.cast(None)
+boolvalueInput = adsk.core.BoolValueCommandInput.cast(None)
+stringDocname = adsk.core.StringValueCommandInput.cast(None)
 
 # global set of event handlers to keep them referenced for the duration of the command
 handlers = []
@@ -40,7 +41,6 @@ def getUserLanguage():
         adsk.core.UserLanguages.RussianLanguage: "ru-RU",
         adsk.core.UserLanguages.SpanishLanguage: "es-ES",
     }[app.preferences.generalPreferences.userLanguage]
-
 
 # Get loc string by language
 
@@ -103,7 +103,7 @@ def run(context):
         app = adsk.core.Application.get()
         doc_a = app.activeDocument
         doc_seed = doc_a.name
-        doc_title = "New Doc from " + doc_seed
+        doc_title_ = "Doc from " + doc_seed
 
         class InputChangedHandler(adsk.core.InputChangedEventHandler):
             def __init__(self):
@@ -116,17 +116,19 @@ def run(context):
 
                     if cmdInput.id == 'dropDownCommandInput':
                         if cmdInput.selectedItem.name == 'Manufacturing':
+                            doc_title_ = "MFG Doc from " + doc_seed
                             ui.messageBox(_('MFG').format(
                                 command.parentCommandDefinition.id))
                         else:
+                            doc_title_ = "Other Doc from " + doc_seed
                             ui.messageBox(_('Other').format(
                                 command.parentCommandDefinition.id))
 
                     if cmdInput.id == 'boolvalueInput_':
-                        if boolvalueInput_.value == True:
-                            sringDocName.isEnabled = False
+                        if cmdInput.value == True:
+                            stringDocname.isEnabled = False
                         else:
-                            stringDocName.isEnabled = True
+                            stringDocname.isEnabled = True
 
                     # else:
 
@@ -154,7 +156,7 @@ def run(context):
                     )
 
                     doc_b.saveAs(
-                        doc_title,
+                        doc_title_,
                         doc_a.dataFile.parentFolder,
                         "Auto created by related data add-in",
                         "",
@@ -219,7 +221,7 @@ def run(context):
                     boolCommandInput.value = True
 
                     stringDocName = commandInputs_.addStringValueInput(
-                        "stringValueInput_", _("Name"), _(doc_title)
+                        "stringValueInput_", _("Name"), _(doc_title_)
                     )
                     stringDocName.isEnabled = False
 
