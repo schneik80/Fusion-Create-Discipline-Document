@@ -98,6 +98,10 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
     def notify(self, args):
         try:
             cmdInput = args.input
+            # Get Document name
+            doc_a = _app.activeDocument
+            doc_seedv = doc_a.name
+            doc_seed = doc_seedv.rsplit(' ', 1)[0]
             stringDocname = args.inputs.itemById('stringValueInput_')
             if cmdInput.id == 'dropDownCommandInput':
                 if cmdInput.selectedItem.name == 'Assembly':
@@ -106,6 +110,26 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
                     # ui.messageBox(_(doc_title_))
                 if cmdInput.selectedItem.name == 'Manufacturing':
                     doc_title_ = "MFG Doc from " + doc_seed
+                    stringDocname.value = doc_title_
+                    # ui.messageBox(_(doc_title_))
+
+                if cmdInput.selectedItem.name == 'Simulation':
+                    doc_title_ = "SIM Doc from " + doc_seed
+                    stringDocname.value = doc_title_
+                    # ui.messageBox(_(doc_title_))
+
+                if cmdInput.selectedItem.name == 'Gennerative':
+                    doc_title_ = "GEN Doc from " + doc_seed
+                    stringDocname.value = doc_title_
+                    # ui.messageBox(_(doc_title_))
+
+                if cmdInput.selectedItem.name == 'Render':
+                    doc_title_ = "Viz Doc from " + doc_seed
+                    stringDocname.value = doc_title_
+                    # ui.messageBox(_(doc_title_))
+
+                if cmdInput.selectedItem.name == 'Animation':
+                    doc_title_ = "Animation Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
 
@@ -204,6 +228,12 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
                 "boolvalueInput_", _("Auto-Name"), True
             )
             boolCommandInput.value = True
+
+            doc_a = _app.activeDocument
+            doc_seedv = doc_a.name
+            doc_seed = doc_seedv.rsplit(' ', 1)[0]
+
+            doc_title_ = "ASSY Doc from " + doc_seed
 
             stringDocName = commandInputs_.addStringValueInput(
                 "stringValueInput_", _("Name"), _(doc_title_)
