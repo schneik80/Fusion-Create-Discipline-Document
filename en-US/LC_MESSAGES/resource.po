@@ -16,7 +16,7 @@ msgstr ""
 
 #:
 msgid "Create Related Document"
-msgstr "Create Related1 Document"
+msgstr "Create Related Document"
 
 #:
 msgid "commandDefinition id is not specified"
