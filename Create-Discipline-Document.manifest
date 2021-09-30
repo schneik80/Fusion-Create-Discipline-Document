@@ -1,0 +1,14 @@
+{
+    "autodeskProduct":"Fusion360",
+    "type":"addin",
+    "id":"6c6b23ae-b287-4ba8-90fb-f667843fc2fd",
+    "author":"Autodesk Inc.",
+    "description":{
+        "":	"Create Discipline Document",
+		"1033": "Create Discipline Document",
+		"2052": "Create Discipline Document"
+    },
+    "version":"0.5.0",
+    "runOnStartup":false,
+    "supportedOS":"windows|mac"
+}

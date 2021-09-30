@@ -14,6 +14,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
+#:
+msgid "Create Related Document"
+msgstr "Create Related1 Document"
 
 #:
 msgid "commandDefinition id is not specified"
