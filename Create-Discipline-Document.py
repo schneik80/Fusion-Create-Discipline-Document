@@ -10,8 +10,8 @@ import gettext
 # Globals
 commandIdOnPanel = 'Create Discipline Document'
 panelId = 'SolidCreatePanel'
-doc_seed = 'seed'
-doc_title_ = 'testing'
+doc_seed = 'seed document'
+doc_title_ = 'document title'
 
 # Global Command inputs
 _app = adsk.core.Application.get()
@@ -118,7 +118,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
 
-                if cmdInput.selectedItem.name == 'Gennerative':
+                if cmdInput.selectedItem.name == 'Generative':
                     doc_title_ = "GEN Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
@@ -220,7 +220,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             dropDownItems_.add(_("Assembly"), True)
             dropDownItems_.add(_("Manufacturing"), False)
             dropDownItems_.add(_("Simulation"), False)
-            dropDownItems_.add(_("Gennerative"), False)
+            dropDownItems_.add(_("Generative"), False)
             dropDownItems_.add(_("Render"), False)
             dropDownItems_.add(_("Animation"), False)
 
@@ -269,6 +269,7 @@ def run(context):
         workspaces_ = ui.workspaces
         modelingWorkspace_ = workspaces_.itemById("FusionSolidEnvironment")
         toolbarPanels_ = modelingWorkspace_.toolbarPanels
+
         # add the new command under the CREATE panel
         toolbarPanel_ = toolbarPanels_.itemById(panelId)
         toolbarControlsPanel_ = toolbarPanel_.controls
@@ -288,11 +289,6 @@ def run(context):
                 commandDefinitionPanel_
             )
             toolbarControlPanel_.isVisible = True
-            ui.messageBox(
-                _(
-                    "Command is successfully added to the create panel in modeling workspace"
-                )
-            )
 
     except:
         if ui:
