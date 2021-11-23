@@ -1,5 +1,5 @@
 # Author-schneik.
-# Description-This is addin to take the active design document tab and insert into a new document as a child. the new document is named based on a user selection to help capture intent.
+# Description-This is add-in to take the active design document tab and insert into a new document as a child. the new document is named based on a user selection to help capture intent.
 
 import adsk.core
 import adsk.fusion
@@ -10,8 +10,8 @@ import gettext
 # Globals
 commandIdOnPanel = 'Create Discipline Document'
 panelId = 'SolidCreatePanel'
-doc_seed = 'seed document'
-doc_title_ = 'document title'
+doc_seed = 'Seed Document'
+doc_title_ = 'Document Title'
 
 # Global Command inputs
 _app = adsk.core.Application.get()
@@ -20,7 +20,7 @@ dropDownCommandInput = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput = adsk.core.BoolValueCommandInput.cast(None)
 stringDocname = adsk.core.StringValueCommandInput.cast(None)
 
-# global set of event handlers to keep them referenced for the duration of the command
+# Global set of event handlers to keep them referenced for the duration of the command
 handlers = []
 
 # Support localization
@@ -67,7 +67,6 @@ def commandDefinitionById(id):
     commandDefinition_ = commandDefinitions_.itemById(id)
     return commandDefinition_
 
-
 def commandControlByIdForPanel(id):
     _app = adsk.core.Application.get()
     ui = _app.userInterface
@@ -82,14 +81,12 @@ def commandControlByIdForPanel(id):
     toolbarControl_ = toolbarControls_.itemById(id)
     return toolbarControl_
 
-
 def destroyObject(uiObj, tobeDeleteObj):
     if uiObj and tobeDeleteObj:
         if tobeDeleteObj.isValid:
             tobeDeleteObj.deleteMe()
         else:
             uiObj.messageBox(_("tobeDeleteObj is not a valid object"))
-
 
 class InputChangedHandler(adsk.core.InputChangedEventHandler):
     def __init__(self):
@@ -147,7 +144,6 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
                     )
                 )
 
-
 class CommandExecuteHandler(adsk.core.CommandEventHandler):
     def __init__(self):
         super().__init__()
@@ -180,11 +176,6 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
 
             doc_b.save("Auto saved by related data add-in")
 
-            ui.messageBox(
-                _("command: {} executed successfully").format(
-                    command.parentCommandDefinition.id
-                )
-            )
         except:
             if ui:
                 ui.messageBox(
@@ -192,7 +183,6 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
                         traceback.format_exc()
                     )
                 )
-
 
 class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
     def __init__(self):
@@ -247,7 +237,6 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
                         traceback.format_exc()
                     )
                 )
-
 
 def run(context):
     ui = None
