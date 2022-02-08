@@ -7,20 +7,17 @@ import traceback
 import os
 import gettext
 
-# Globals
-commandIdOnPanel = 'Create Discipline Document'
-panelId = 'SolidCreatePanel'
-doc_seed = 'Seed Document'
-doc_title_ = 'Document Title'
-
 # Global Command inputs
 _app = adsk.core.Application.get()
 ui = _app.userInterface
 dropDownCommandInput = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput = adsk.core.BoolValueCommandInput.cast(None)
 stringDocname = adsk.core.StringValueCommandInput.cast(None)
-
-# Global set of event handlers to keep them referenced for the duration of the command
+commandIdOnPanel = "Create Discipline Document"
+panelId = "SolidCreatePanel"
+doc_seed = "Seed Document"
+doc_title_ = "Document Title"
+doc_urn = "urn:adsk.wipprod:dm.lineage:zAVmyja7TCyq_vmZ53Bg4g"  # Start out with the assembly template urn
 handlers = []
 
 # Support localization
@@ -47,6 +44,7 @@ def getUserLanguage():
         adsk.core.UserLanguages.SpanishLanguage: "es-ES",
     }[_app.preferences.generalPreferences.userLanguage]
 
+
 # Get loc string by language
 
 
@@ -67,6 +65,7 @@ def commandDefinitionById(id):
     commandDefinition_ = commandDefinitions_.itemById(id)
     return commandDefinition_
 
+
 def commandControlByIdForPanel(id):
     _app = adsk.core.Application.get()
     ui = _app.userInterface
@@ -81,12 +80,14 @@ def commandControlByIdForPanel(id):
     toolbarControl_ = toolbarControls_.itemById(id)
     return toolbarControl_
 
+
 def destroyObject(uiObj, tobeDeleteObj):
     if uiObj and tobeDeleteObj:
         if tobeDeleteObj.isValid:
             tobeDeleteObj.deleteMe()
         else:
             uiObj.messageBox(_("tobeDeleteObj is not a valid object"))
+
 
 class InputChangedHandler(adsk.core.InputChangedEventHandler):
     def __init__(self):
@@ -98,39 +99,46 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
             # Get Document name
             doc_a = _app.activeDocument
             doc_seedv = doc_a.name
-            doc_seed = doc_seedv.rsplit(' ', 1)[0]
-            stringDocname = args.inputs.itemById('stringValueInput_')
-            if cmdInput.id == 'dropDownCommandInput':
-                if cmdInput.selectedItem.name == 'Assembly':
+            doc_seed = doc_seedv.rsplit(" ", 1)[0]
+            global doc_urn
+            stringDocname = args.inputs.itemById("stringValueInput_")
+            if cmdInput.id == "dropDownCommandInput":
+                if cmdInput.selectedItem.name == "Assembly":
+                    doc_urn = "urn:adsk.wipprod:dm.lineage:zAVmyja7TCyq_vmZ53Bg4g"  # Assembly URN
                     doc_title_ = "ASSY Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
-                if cmdInput.selectedItem.name == 'Manufacturing':
+                if cmdInput.selectedItem.name == "Manufacturing":
+                    doc_urn = "urn:adsk.wipprod:dm.lineage:yY2rAlHkRXuhiXTN1Q9P6Q"  # Manufacturing URN
                     doc_title_ = "MFG Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
 
-                if cmdInput.selectedItem.name == 'Simulation':
+                if cmdInput.selectedItem.name == "Simulation":
+                    doc_urn = "urn:adsk.wipprod:dm.lineage:g1eVUEzaQVqCCr9nGQxhFg"  # Simulation URN
                     doc_title_ = "SIM Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
 
-                if cmdInput.selectedItem.name == 'Generative':
+                if cmdInput.selectedItem.name == "Generative":
+                    doc_urn = "urn:adsk.wipprod:dm.lineage:fR9IDnS6S9uygX3Cukoc-A"  # Generative URN
                     doc_title_ = "GEN Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
 
-                if cmdInput.selectedItem.name == 'Render':
-                    doc_title_ = "Viz Doc from " + doc_seed
+                if cmdInput.selectedItem.name == "Render":
+                    doc_urn = "urn:adsk.wipprod:dm.lineage:GYrlC5yUQuWUlnp_1wp5wQ"  # Rendering URN
+                    doc_title_ = "VIZ Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
 
-                if cmdInput.selectedItem.name == 'Animation':
-                    doc_title_ = "Animation Doc from " + doc_seed
+                if cmdInput.selectedItem.name == "Animation":
+                    doc_urn = "urn:adsk.wipprod:dm.lineage:OZOBQ0S0SMelun1F7rL8-A"  # Amimation URN
+                    doc_title_ = "ANM Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
 
-            if cmdInput.id == 'boolvalueInput_':
+            if cmdInput.id == "boolvalueInput_":
                 if cmdInput.value == True:
                     stringDocname.isEnabled = False
                 else:
@@ -139,10 +147,9 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
         except:
             if ui:
                 ui.messageBox(
-                    _("Input changed event failed: {}").format(
-                        traceback.format_exc()
-                    )
+                    _("Input changed event failed: {}").format(traceback.format_exc())
                 )
+
 
 class CommandExecuteHandler(adsk.core.CommandEventHandler):
     def __init__(self):
@@ -151,14 +158,14 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
     def notify(self, args: adsk.core.CommandEventArgs):
         try:
             command = args.firingEvent.sender
+            global doc_urn
+            sF = _app.data.findFileById(doc_urn)
             doc_a = _app.activeDocument
-            doc_title_input: adsk.core.StringValueCommandInput = args.command.commandInputs.itemById(
-                "stringValueInput_")
-            doc_title_ = doc_title_input.value
-            doc_b = _app.documents.add(
-                adsk.core.DocumentTypes.FusionDesignDocumentType
+            doc_title_input: adsk.core.StringValueCommandInput = (
+                args.command.commandInputs.itemById("stringValueInput_")
             )
-
+            doc_title_ = doc_title_input.value
+            doc_b = _app.documents.open(sF)
             doc_b.saveAs(
                 doc_title_,
                 doc_a.dataFile.parentFolder,
@@ -179,10 +186,9 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
         except:
             if ui:
                 ui.messageBox(
-                    _("command executed failed: {}").format(
-                        traceback.format_exc()
-                    )
+                    _("command executed failed: {}").format(traceback.format_exc())
                 )
+
 
 class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
     def __init__(self):
@@ -205,7 +211,10 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             commandInputs_ = cmd.commandInputs
 
             dropDownCommandInput = commandInputs_.addDropDownCommandInput(
-                'dropDownCommandInput', _('Type'), adsk.core.DropDownStyles.LabeledIconDropDownStyle)
+                "dropDownCommandInput",
+                _("Type"),
+                adsk.core.DropDownStyles.LabeledIconDropDownStyle,
+            )
             dropDownItems_ = dropDownCommandInput.listItems
             dropDownItems_.add(_("Assembly"), True)
             dropDownItems_.add(_("Manufacturing"), False)
@@ -221,7 +230,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
 
             doc_a = _app.activeDocument
             doc_seedv = doc_a.name
-            doc_seed = doc_seedv.rsplit(' ', 1)[0]
+            doc_seed = doc_seedv.rsplit(" ", 1)[0]
 
             doc_title_ = "ASSY Doc from " + doc_seed
 
@@ -233,10 +242,9 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
         except:
             if ui:
                 ui.messageBox(
-                    _("Panel command created failed: {}").format(
-                        traceback.format_exc()
-                    )
+                    _("Panel command created failed: {}").format(traceback.format_exc())
                 )
+
 
 def run(context):
     ui = None
@@ -264,8 +272,7 @@ def run(context):
         toolbarControlsPanel_ = toolbarPanel_.controls
         toolbarControlPanel_ = toolbarControlsPanel_.itemById(commandIdOnPanel)
         if not toolbarControlPanel_:
-            commandDefinitionPanel_ = commandDefinitions_.itemById(
-                commandIdOnPanel)
+            commandDefinitionPanel_ = commandDefinitions_.itemById(commandIdOnPanel)
             if not commandDefinitionPanel_:
                 commandDefinitionPanel_ = commandDefinitions_.addButtonDefinition(
                     commandIdOnPanel, commandName, commandDescription, commandResources
@@ -281,8 +288,7 @@ def run(context):
 
     except:
         if ui:
-            ui.messageBox(_("AddIn Start Failed: {}").format(
-                traceback.format_exc()))
+            ui.messageBox(_("AddIn Start Failed: {}").format(traceback.format_exc()))
 
 
 def stop(context):
@@ -305,5 +311,4 @@ def stop(context):
 
     except:
         if ui:
-            ui.messageBox(_("AddIn Stop Failed: {}").format(
-                traceback.format_exc()))
+            ui.messageBox(_("AddIn Stop Failed: {}").format(traceback.format_exc()))
