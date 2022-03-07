@@ -15,6 +15,7 @@ dropDownCommandInput = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput = adsk.core.BoolValueCommandInput.cast(None)
 stringDocname = adsk.core.StringValueCommandInput.cast(None)
 globalCommand = " Create Related Document"
+panelId = 'SolidCreatePanel'
 commandIdOnPanel = globalCommand
 
 #create doc name values
@@ -294,7 +295,6 @@ def run(context):
         commandDescription = globalCommand
         commandResources = "./resources"
         iconResources = "./resources"
-        panelId = "SolidCreatePanel"
 
         commandDefinitions_ = ui.commandDefinitions
 
