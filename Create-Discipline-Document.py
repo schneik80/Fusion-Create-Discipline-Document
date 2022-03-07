@@ -54,12 +54,6 @@ myDocsDict = {
     "newDocTitle" : "VIZ doc from "
     },
 
-    "haasDict" : {
-    "name": "HaaS",
-    "urn" : "urn:adsk.wipprod:dm.lineage:g1eVUEzaQVqCCr9nGQxhFg",
-    "newDocTitle" : "HaaS doc from "
-    },
-
     "anmDict" : {
     "name": "Animation",
     "urn" : "urn:adsk.wipprod:dm.lineage:OZOBQ0S0SMelun1F7rL8-A",
