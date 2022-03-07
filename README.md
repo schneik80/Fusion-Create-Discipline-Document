@@ -37,6 +37,22 @@ C --"X-Ref"--> A
 
 ```
 
+### Render designs with a common render setup
+
+Using the start document's ability to pre store information. You open a new empty document and activate the rendering workspace.
+
+You can define new emissive bodies as lights and store several different options for floor. In addition you setup the render defaults for exposure, HDRI Environment map and background and camera focal settings.
+
+```mermaid
+graph TD
+
+A(Fusion Design)
+B(Render Document)
+
+B --"X-Ref"--> A
+
+```
+
 ## Multiple Start Documents
 
 To best use this add-in you should pre-create and save start documents that have information already defined in them. This allows you to automate and make smart start parts that can reduce setup for your intended workflows.
@@ -74,3 +90,11 @@ C5 --"Copy"--> B
 C6 --"Copy"--> B
 
 ```
+
+To select from the different start document you choose from the drop down in the dialog displayed wgen cunning the "Create Related Document" command.
+
+![Command Dialog](assets/001-CDD.png)
+
+Thw drop down show available start documents.
+
+![Start Documents](assets/002-CDD.png)
