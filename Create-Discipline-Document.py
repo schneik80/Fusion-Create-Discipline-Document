@@ -17,8 +17,51 @@ commandIdOnPanel = "Create Discipline Document"
 panelId = "SolidCreatePanel"
 doc_seed = "Seed Document"
 doc_title_ = "Document Title"
-doc_urn = "urn:adsk.wipprod:dm.lineage:zAVmyja7TCyq_vmZ53Bg4g"  # Start out with the assembly template urn
 handlers = []
+
+myDocsDict = {
+
+    ### TODO Edit the below section adding a xxxDist section to the Documents Dictonary. This is the one place to setup your start documents. 
+
+    "asmDict" : {
+    "name": "Assembly",
+    "urn": "urn:adsk.wipprod:dm.lineage:zAVmyja7TCyq_vmZ53Bg4g",
+    "docTitle": "ASSY Doc from "
+    },
+
+    "mfgDict" : {
+    "name": "Manufacturing",
+    "urn" : "urn:adsk.wipprod:dm.lineage:g1eVUEzaQVqCCr9nGQxhFg",
+    "docTitle" : "MFG Doc from "
+    },
+
+    "simDict" : {
+    "name": "Simulation",
+    "urn" : "urn:adsk.wipprod:dm.lineage:g1eVUEzaQVqCCr9nGQxhFg",
+    "docTitle" : "SIM doc from "
+    },
+
+    "genDict" : {
+    "name": "Generative",
+    "urn" : "urn:adsk.wipprod:dm.lineage:fR9IDnS6S9uygX3Cukoc-A",
+    "docTitle" : "GEN doc from "
+    },
+
+    "vizDict" : {
+    "name": "Render",
+    "urn" : "urn:adsk.wipprod:dm.lineage:GYrlC5yUQuWUlnp_1wp5wQ",
+    "docTitle" : "VIZ doc from "
+    },
+
+    "anmDict" : {
+    "name": "Animation",
+    "urn" : "urn:adsk.wipprod:dm.lineage:OZOBQ0S0SMelun1F7rL8-A",
+    "docTitle" : "ANM doc from "
+    }
+
+}
+
+# doc_urn = (myDocsDict).get("asmDict").get("urn") # Assembly URN  # Start out with the assembly template urn
 
 # Support localization
 _ = None
@@ -101,10 +144,12 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
             doc_seedv = doc_a.name
             doc_seed = doc_seedv.rsplit(" ", 1)[0]
             global doc_urn
+            global myDocsDict
             stringDocname = args.inputs.itemById("stringValueInput_")
+            
             if cmdInput.id == "dropDownCommandInput":
                 if cmdInput.selectedItem.name == "Assembly":
-                    doc_urn = "urn:adsk.wipprod:dm.lineage:zAVmyja7TCyq_vmZ53Bg4g"  # Assembly URN
+                    doc_urn = (myDocsDict).get("asmDict").get("urn")  # Assembly URN
                     doc_title_ = "ASSY Doc from " + doc_seed
                     stringDocname.value = doc_title_
                     # ui.messageBox(_(doc_title_))
@@ -198,7 +243,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
         try:
             cmd = args.command
             cmd.helpFile = "help.html"
-
+            global myDocsDict
             onExecute = CommandExecuteHandler()
             cmd.execute.add(onExecute)
 
@@ -210,29 +255,28 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
 
             commandInputs_ = cmd.commandInputs
 
+             # we need to get the active document without the version at the end
+            doc_a = _app.activeDocument
+            doc_with_ver = doc_a.name
+            doc_seed = doc_with_ver.rsplit(" ", 1)[0] # trim version
+
             dropDownCommandInput = commandInputs_.addDropDownCommandInput(
                 "dropDownCommandInput",
                 _("Type"),
                 adsk.core.DropDownStyles.LabeledIconDropDownStyle,
             )
+
+
             dropDownItems_ = dropDownCommandInput.listItems
-            dropDownItems_.add(_("Assembly"), True)
-            dropDownItems_.add(_("Manufacturing"), False)
-            dropDownItems_.add(_("Simulation"), False)
-            dropDownItems_.add(_("Generative"), False)
-            dropDownItems_.add(_("Render"), False)
-            dropDownItems_.add(_("Animation"), False)
+            for key, val in myDocsDict.items():
+                    if isinstance(val, dict):
+                        dropDownItems_.add(_(val.get("name")), True),
+                        doc_title_ = (val.get("docTitle")) + doc_seed
 
             boolCommandInput = commandInputs_.addBoolValueInput(
                 "boolvalueInput_", _("Auto-Name"), True
             )
             boolCommandInput.value = True
-
-            doc_a = _app.activeDocument
-            doc_seedv = doc_a.name
-            doc_seed = doc_seedv.rsplit(" ", 1)[0]
-
-            doc_title_ = "ASSY Doc from " + doc_seed
 
             stringDocName = commandInputs_.addStringValueInput(
                 "stringValueInput_", _("Name"), _(doc_title_)
