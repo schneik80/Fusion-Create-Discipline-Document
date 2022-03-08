@@ -131,3 +131,43 @@ Thw drop down show available start documents.
 
 The new related document is auto-named by default. You can uncheck the auto-name option and define a name of your own.
 Click OK and the new related document is created and your source document is inserted.
+
+## How to find your own documents URNs
+
+Open the document you want to use as a start part.
+
+From the application menu turn on the Text Command Pallet
+![Text Command Pallet](assets/003-CDD.png)
+
+Next, make sure you have "Py" turned on at the far right bottom of the text command pallet.
+![Py settings](assets/004-CDD.png)
+
+In the text command pallet type:
+
+```
+app=adsk.core.Application.get()
+```
+
+Next type:
+
+```
+id=app.activeDocument.dataFile.id
+```
+
+Now type:
+
+```
+id
+```
+
+Fusion will return the urn for the open active document. Select this string and copy it using the Right Mouse Click menu. Copy the entire string "urn:XXXXXX"
+
+![Example id](assets/005-CDD.png)
+
+Open [Create-Discipline-Document.py](./Create-Discipline-Document.py)
+Scroll down to line 31 and edit the myDocsDict with each of the documents you want.
+Be sure to replicate the syntax, ensure you give each document a unique category like mfgDict, a unique Name like "Manufacturing"
+
+You should remove all the existing example documents and only have entries for your own documents and urns as you extracted above. This modified document will work for all team members in the same hub so long as the are members of the project/folder where the start documents are stored.
+
+**TIP:** If you save your start documents with the workspace you want to default to, this workspace will automatically default creating new related documents from these start documents.
