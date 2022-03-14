@@ -123,7 +123,7 @@ You can add this command to your toolbar or "S Key" shortcuts.
 
 To select from the different start document you choose from the drop down in the dialog displayed wgen cunning the "Create Related Document" command.
 
-![Command Dialog](assets/001-CDD.png)
+![Command Dialog](assets/001-2-CDD.png)
 
 Thw drop down show available start documents.
 
