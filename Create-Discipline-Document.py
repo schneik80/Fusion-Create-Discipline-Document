@@ -10,9 +10,9 @@ import os.path
 import gettext
 import json
 
+# Load project and folder from json
 my_addin_path = os.path.dirname(os.path.realpath(__file__))
 my_json_path = os.path.join(my_addin_path, "data.json")
-
 with open(my_json_path) as json_file:
     data = json.load(json_file)
     print(data)
@@ -27,8 +27,6 @@ globalCommand = " Create Related Document"
 panelId = "SolidCreatePanel"
 commandIdOnPanel = globalCommand
 my_hub = app.data.activeHub
-my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
-my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
 
 # create doc name values
 docSeed = ""
@@ -36,32 +34,6 @@ docTitle = ""
 
 # handlers
 handlers = []
-
-try:
-    app = adsk.core.Application.get()
-    ui = app.userInterface
-    my_hub = app.data.activeHub
-    my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
-    my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
-    myDocsDict = {}
-    for data_file in my_folder.dataFiles:
-        if data_file.fileExtension == "f3d":
-            dname = data_file.name + "dict"
-            myDocsDict.update(
-                {
-                    dname: {
-                        "name": data_file.name,
-                        "urn": data_file.id,
-                        "newDocTitle": data_file.name + " doc from ",
-                    }
-                }
-            )
-    ...
-
-except:
-    if ui:
-        ui.messageBox("Failed:\n{}".format(traceback.format_exc()))
-
 
 # Support localization
 _ = None
@@ -89,8 +61,6 @@ def getUserLanguage():
 
 
 # Get loc string by language
-
-
 def getLocStrings():
     currentDir = os.path.dirname(os.path.realpath(__file__))
     return gettext.translation(
@@ -167,6 +137,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
                 ) + docSeed  # set the document title
                 stringDocname.value = docTitle
 
+            # Auto name or user name input
             if cmdInput.id == "boolvalueInput_":
                 if cmdInput.value == True:
                     stringDocname.isEnabled = False
@@ -185,9 +156,10 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
         super().__init__()
 
     def notify(self, args: adsk.core.CommandEventArgs):
+        global doc_urn
         try:
             command = args.firingEvent.sender
-            global doc_urn
+
             sF = app.data.findFileById(doc_urn)
             doc_a = app.activeDocument
             docTitleinput: adsk.core.StringValueCommandInput = (
@@ -228,6 +200,26 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             cmd = args.command
             cmd.helpFile = "help.html"
             global myDocsDict
+            app = adsk.core.Application.get()
+            ui = app.userInterface
+            my_hub = app.data.activeHub
+            my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
+            my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
+            myDocsDict = {}
+            for data_file in my_folder.dataFiles:
+                if data_file.fileExtension == "f3d":
+                    dname = data_file.name + "dict"
+                    myDocsDict.update(
+                        {
+                            dname: {
+                                "name": data_file.name,
+                                "urn": data_file.id,
+                                "newDocTitle": data_file.name + " doc from ",
+                            }
+                        }
+                    )
+            ...
+
             onExecute = CommandExecuteHandler()
             cmd.execute.add(onExecute)
 
