@@ -6,7 +6,16 @@ import adsk.core
 import adsk.fusion
 import traceback
 import os
+import os.path
 import gettext
+import json
+
+# Load project and folder from json
+my_addin_path = os.path.dirname(os.path.realpath(__file__))
+my_json_path = os.path.join(my_addin_path, "data.json")
+with open(my_json_path) as json_file:
+    data = json.load(json_file)
+    print(data)
 
 # Global Command inputs
 app = adsk.core.Application.get()
@@ -15,60 +24,16 @@ dropDownCommandInput = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput = adsk.core.BoolValueCommandInput.cast(None)
 stringDocname = adsk.core.StringValueCommandInput.cast(None)
 globalCommand = " Create Related Document"
-panelId = 'SolidCreatePanel'
+panelId = "SolidCreatePanel"
 commandIdOnPanel = globalCommand
+my_hub = app.data.activeHub
 
-#create doc name values
+# create doc name values
 docSeed = ""
 docTitle = ""
 
 # handlers
 handlers = []
-
-# Dictionary for document
-myDocsDict = {
-
-    ### TODO Edit the below section adding a xxxDist section to the Documents Dictionary. This is the one place to setup your start documents. 
-
-    "mfgDict" : {
-    "name": "Manufacturing",
-    "urn" : "urn:adsk.wipprod:dm.lineage:g1eVUEzaQVqCCr9nGQxhFg",
-    "newDocTitle" : "MFG Doc from "
-    },
-
-    "simDict" : {
-    "name": "Simulation",
-    "urn" : "urn:adsk.wipprod:dm.lineage:g1eVUEzaQVqCCr9nGQxhFg",
-    "newDocTitle" : "SIM doc from "
-    },
-
-    "genDict" : {
-    "name": "Generative",
-    "urn" : "urn:adsk.wipprod:dm.lineage:fR9IDnS6S9uygX3Cukoc-A",
-    "newDocTitle" : "GEN doc from "
-    },
-
-    "vizDict" : {
-    "name": "Render",
-    "urn" : "urn:adsk.wipprod:dm.lineage:GYrlC5yUQuWUlnp_1wp5wQ",
-    "newDocTitle" : "VIZ doc from "
-    },
-
-    "anmDict" : {
-    "name": "Animation",
-    "urn" : "urn:adsk.wipprod:dm.lineage:OZOBQ0S0SMelun1F7rL8-A",
-    "newDocTitle" : "ANM doc from "
-    },
-
-    #Last item in dictionary is the default
-
-    "asmDict" : {
-    "name": "Assembly",
-    "urn": "urn:adsk.wipprod:dm.lineage:zAVmyja7TCyq_vmZ53Bg4g",
-    "newDocTitle": "ASSY Doc from "
-    }
-
-}
 
 # Support localization
 _ = None
@@ -94,8 +59,8 @@ def getUserLanguage():
         adsk.core.UserLanguages.SpanishLanguage: "es-ES",
     }[app.preferences.generalPreferences.userLanguage]
 
-# Get loc string by language
 
+# Get loc string by language
 def getLocStrings():
     currentDir = os.path.dirname(os.path.realpath(__file__))
     return gettext.translation(
@@ -145,20 +110,20 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
         try:
             cmdInput = args.input
 
-             # we need to get the active document without the version at the end
+            # we need to get the active document without the version at the end
             doc_a = app.activeDocument
             doc_with_ver = doc_a.name
-            docSeed = doc_with_ver.rsplit(" ", 1)[0] # trim version
+            docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
 
             global doc_urn
 
             stringDocname = args.inputs.itemById("stringValueInput_")
-            
+
             # handle the combobox change event
             if cmdInput.id == "dropDownCommandInput":
                 searchDict = cmdInput.selectedItem.name
 
-                #find the right dictionary based on the combo box value
+                # find the right dictionary based on the combo box value
                 listOfKeys = ""
                 for i in myDocsDict.keys():
                     for j in myDocsDict[i].values():
@@ -166,10 +131,13 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
                             if i not in listOfKeys:
                                 listOfKeys = i
 
-                doc_urn = (myDocsDict).get(listOfKeys).get("urn") # set the urn
-                docTitle = (myDocsDict).get(listOfKeys).get("newDocTitle") + docSeed # set the document title
+                doc_urn = (myDocsDict).get(listOfKeys).get("urn")  # set the urn
+                docTitle = (myDocsDict).get(listOfKeys).get(
+                    "newDocTitle"
+                ) + docSeed  # set the document title
                 stringDocname.value = docTitle
 
+            # Auto name or user name input
             if cmdInput.id == "boolvalueInput_":
                 if cmdInput.value == True:
                     stringDocname.isEnabled = False
@@ -188,9 +156,10 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
         super().__init__()
 
     def notify(self, args: adsk.core.CommandEventArgs):
+        global doc_urn
         try:
             command = args.firingEvent.sender
-            global doc_urn
+
             sF = app.data.findFileById(doc_urn)
             doc_a = app.activeDocument
             docTitleinput: adsk.core.StringValueCommandInput = (
@@ -231,6 +200,26 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             cmd = args.command
             cmd.helpFile = "help.html"
             global myDocsDict
+            app = adsk.core.Application.get()
+            ui = app.userInterface
+            my_hub = app.data.activeHub
+            my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
+            my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
+            myDocsDict = {}
+            for data_file in my_folder.dataFiles:
+                if data_file.fileExtension == "f3d":
+                    dname = data_file.name + "dict"
+                    myDocsDict.update(
+                        {
+                            dname: {
+                                "name": data_file.name,
+                                "urn": data_file.id,
+                                "newDocTitle": data_file.name + " doc from ",
+                            }
+                        }
+                    )
+            ...
+
             onExecute = CommandExecuteHandler()
             cmd.execute.add(onExecute)
 
@@ -242,10 +231,10 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
 
             commandInputs_ = cmd.commandInputs
 
-             # we need to get the active document without the version at the end
+            # we need to get the active document without the version at the end
             doc_a = app.activeDocument
             doc_with_ver = doc_a.name
-            docSeed = doc_with_ver.rsplit(" ", 1)[0] # trim version
+            docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
 
             dropDownCommandInput = commandInputs_.addDropDownCommandInput(
                 "dropDownCommandInput",
@@ -253,12 +242,11 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
                 adsk.core.DropDownStyles.LabeledIconDropDownStyle,
             )
 
-
             dropDownItems_ = dropDownCommandInput.listItems
             for key, val in myDocsDict.items():
-                    if isinstance(val, dict):
-                        dropDownItems_.add(_(val.get("name")), True),
-                        docTitle = (val.get("newDocTitle")) + docSeed
+                if isinstance(val, dict):
+                    dropDownItems_.add(_(val.get("name")), True),
+                    docTitle = (val.get("newDocTitle")) + docSeed
 
             boolCommandInput = commandInputs_.addBoolValueInput(
                 "boolvalueInput_", _("Auto-Name"), True
@@ -318,7 +306,9 @@ def run(context):
 
     except:
         if ui:
-            ui.messageBox(_("Failed to start Add-In: {}").format(traceback.format_exc()))
+            ui.messageBox(
+                _("Failed to start Add-In: {}").format(traceback.format_exc())
+            )
 
 
 def stop(context):
