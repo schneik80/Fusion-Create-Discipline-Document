@@ -10,13 +10,6 @@ import os.path
 import gettext
 import json
 
-# Load project and folder from json
-my_addin_path = os.path.dirname(os.path.realpath(__file__))
-my_json_path = os.path.join(my_addin_path, "data.json")
-with open(my_json_path) as json_file:
-    data = json.load(json_file)
-    print(data)
-
 # Global Command inputs
 app = adsk.core.Application.get()
 ui = app.userInterface
@@ -38,6 +31,13 @@ handlers = []
 # Support localization
 _ = None
 
+# Load project and folder from json
+my_addin_path = os.path.dirname(os.path.realpath(__file__))
+my_json_path = os.path.join(my_addin_path, "data.json")
+global data
+with open(my_json_path) as json_file:
+    data = json.load(json_file)
+    print(data)
 
 def getUserLanguage():
     app = adsk.core.Application.get()
@@ -93,14 +93,12 @@ def commandControlByIdForPanel(id):
     toolbarControl_ = toolbarControls_.itemById(id)
     return toolbarControl_
 
-
 def destroyObject(uiObj, tobeDeleteObj):
     if uiObj and tobeDeleteObj:
         if tobeDeleteObj.isValid:
             tobeDeleteObj.deleteMe()
         else:
             uiObj.messageBox(_(tobeDeleteObj + " is not a valid object"))
-
 
 class InputChangedHandler(adsk.core.InputChangedEventHandler):
     def __init__(self):
@@ -109,14 +107,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
     def notify(self, args):
         try:
             cmdInput = args.input
-
-            # we need to get the active document without the version at the end
-            doc_a = app.activeDocument
-            doc_with_ver = doc_a.name
-            docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
-
             global doc_urn
-
             stringDocname = args.inputs.itemById("stringValueInput_")
 
             # handle the combobox change event
@@ -134,7 +125,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
                 doc_urn = (myDocsDict).get(listOfKeys).get("urn")  # set the urn
                 docTitle = (myDocsDict).get(listOfKeys).get(
                     "newDocTitle"
-                ) + docSeed  # set the document title
+                ) # set the document title
                 stringDocname.value = docTitle
 
             # Auto name or user name input
@@ -156,33 +147,37 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
         super().__init__()
 
     def notify(self, args: adsk.core.CommandEventArgs):
-        global doc_urn
+        global doc_urn, docSeed, docTitle
+        InputChangedHandler()
         try:
-            command = args.firingEvent.sender
 
-            sF = app.data.findFileById(doc_urn)
-            doc_a = app.activeDocument
+            docActiveUrn = app.data.findFileById(doc_urn)
+            docActive = app.activeDocument
             docTitleinput: adsk.core.StringValueCommandInput = (
                 args.command.commandInputs.itemById("stringValueInput_")
             )
             docTitle = docTitleinput.value
-            doc_b = app.documents.open(sF)
-            doc_b.saveAs(
+            docNew = app.documents.open(docActiveUrn)
+            docNew.saveAs(
                 docTitle,
-                doc_a.dataFile.parentFolder,
+                docActive.dataFile.parentFolder,
                 "Auto created by related data add-in",
                 "",
             )
 
             transform = adsk.core.Matrix3D.create()
-            design_b = adsk.fusion.Design.cast(
-                doc_b.products.itemByProductType("DesignProductType")
+            seedDoc = adsk.fusion.Design.cast(
+                docNew.products.itemByProductType("DesignProductType")
             )
-            design_b.rootComponent.occurrences.addByInsert(
-                doc_a.dataFile, transform, True
+            seedDoc.rootComponent.occurrences.addByInsert(
+                docActive.dataFile, transform, True
             )
 
-            doc_b.save("Auto saved by related data add-in")
+            docNew.save("Auto saved by related data add-in") # Save new doc and add boiler plate comment
+
+            doc_urn=""
+            docSeed = ""
+            docTitle=""
 
         except:
             if ui:
@@ -205,6 +200,11 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             my_hub = app.data.activeHub
             my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
             my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
+
+            docActive = app.activeDocument
+            doc_with_ver = docActive.name
+            docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
+
             myDocsDict = {}
             for data_file in my_folder.dataFiles:
                 if data_file.fileExtension == "f3d":
@@ -214,7 +214,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
                             dname: {
                                 "name": data_file.name,
                                 "urn": data_file.id,
-                                "newDocTitle": data_file.name + " doc from ",
+                                "newDocTitle": docSeed + " --> " + data_file.name,
                             }
                         }
                     )
@@ -231,11 +231,6 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
 
             commandInputs_ = cmd.commandInputs
 
-            # we need to get the active document without the version at the end
-            doc_a = app.activeDocument
-            doc_with_ver = doc_a.name
-            docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
-
             dropDownCommandInput = commandInputs_.addDropDownCommandInput(
                 "dropDownCommandInput",
                 _("Type"),
@@ -246,7 +241,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             for key, val in myDocsDict.items():
                 if isinstance(val, dict):
                     dropDownItems_.add(_(val.get("name")), True),
-                    docTitle = (val.get("newDocTitle")) + docSeed
+                    docTitle = (val.get("newDocTitle"))
 
             boolCommandInput = commandInputs_.addBoolValueInput(
                 "boolvalueInput_", _("Auto-Name"), True
