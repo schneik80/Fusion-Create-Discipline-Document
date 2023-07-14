@@ -115,22 +115,23 @@ C6 --"Copy"--> B
 
 ### User interface.
 
-Once the Add-in is installed and running, you find the command in the Design Workspace -> Create Pannel at the bottom of the menu
+Once the Add-in is installed and running, you find the command in the Design Workspace -> Create Panel at the bottom of the menu.
 
 ![Command](assets/000-CDD.png)
 
 You can add this command to your toolbar or "S Key" shortcuts.
 
-To select from the different start document you choose from the drop down in the dialog displayed wgen cunning the "Create Related Document" command.
+Start the **Create Related Document** command. There will be a pause for a second or so as the list of documents is retrieved from your cloud Team Hub.
 
 ![Command Dialog](assets/001-CDD.png)
 
-Thw drop down show available start documents.
+To select from the different start documents choose from the **Type** drop-down in the dialog displayed.
 
 ![Start Documents](assets/002-CDD.png)
 
-The new related document is auto-named by default. You can uncheck the auto-name option and define a name of your own.
-Click OK and the new related document is created and your source document is inserted.
+The new related document is auto-named by default. You can uncheck the **Auto-Name** option and define a name of your own.
+
+Click **OK** and the new related document is created and your source document is inserted.
 
 ## How to find your own documents URNs
 
@@ -139,7 +140,7 @@ Open the document you want to use as a start part.
 From the application menu turn on the Text Command Pallet
 ![Text Command Pallet](assets/003-CDD.png)
 
-Next, make sure you have "Py" turned on at the far right bottom of the text command pallet.
+Next, make sure you have "Py" turned on at the far right bottom of the **Text Commands** pallet.
 ![Py settings](assets/004-CDD.png)
 
 In the text command pallet type:
@@ -151,23 +152,65 @@ app=adsk.core.Application.get()
 Next type:
 
 ```
-id=app.activeDocument.dataFile.id
+project=app.data.activeProject
 ```
 
 Now type:
 
 ```
-id
+project.id
 ```
 
-Fusion will return the urn for the open active document. Select this string and copy it using the Right Mouse Click menu. Copy the entire string "urn:XXXXXX"
+Fusion will return the urn for the open active hub. Select this string and copy it using the Right Mouse Click menu. Copy the entire string "a.XXXXXX"
 
-![Example id](assets/005-CDD.png)
+Now we get the folder for the open document. This is the folder where all your start documents should be stored. You only need to ensure on start document is open and the active tab.
 
-Open [Create-Discipline-Document.py](./Create-Discipline-Document.py)
-Scroll down to line 31 and edit the myDocsDict with each of the documents you want.
-Be sure to replicate the syntax, ensure you give each document a unique category like mfgDict, a unique Name like "Manufacturing"
+In the **Text Commands** pallet type:
 
-You should remove all the existing example documents and only have entries for your own documents and urns as you extracted above. This modified document will work for all team members in the same hub so long as the are members of the project/folder where the start documents are stored.
+```
+doc = app.activeDocument.dataFile.parentFolder.id
+```
+
+Then type:
+
+```
+doc
+```
+
+Fusion will return the urn for the folder for active active document. Select this string and copy it using the Right Mouse Click menu. Copy the entire string "urn:XXXXXX"
+
+You should see something like this in the **Text Commands** pallet:
+
+```
+app=adsk.core.Application.get()
+
+project=app.data.activeProject
+
+project.id
+a.1234ABCDERgh9101234ABCDERgh910
+
+doc = app.activeDocument.dataFile.parentFolder.id
+
+doc
+urn:adsk.wipprod:fs.folder:co.1234ABCDERgh910
+```
+
+Open [data.json](./data.json).
+
+Edit this and paste in your PROJECT_ID and FOLDER_ID as shown:
+
+```
+{"PROJECT_ID":"_Paste your Project ID here_","FOLDER_ID":"_Paste your Folder ID here_"}
+```
+
+Your Json file should look like this:
+
+```
+{"PROJECT_ID":"a.1234ABCDERgh9101234ABCDERgh910","FOLDER_ID":"urn:adsk.wipprod:fs.folder:co.1234ABCDERgh910"}
+```
+
+Note: Instead of "1234ABCDERgh910" you have your own values. **Save the JSON file** and ensure you provide it to your team members.
+
+You are now ready to use the Related Documents Add-In. You can add documents to the folder you chose to store the start documents. Each time the command is run it will check of new documents and update dynamicaly. This check can take a second or so.
 
 **TIP:** If you save your start documents with the workspace you want to default to, this workspace will automatically default creating new related documents from these start documents.
