@@ -1,17 +1,63 @@
 # Create Discipline Document
 
-When working with imported AnyCAD data, in a team, or on multiple manufacturing processes, it is useful to insert an existing source document into a new related document so that work can be done in the new related document and not change or lock the source document. This add-in creates a Design Workspace command that produces a new related document from a pre-configured list of saved start document that reference the source document. The source document must be the active document and must be saved before this add-in's command can be used.
+When working as a team, with imported AnyCAD data, or on multiple manufacturing processes, it is useful to insert an existing source document into a new related document so that work can be done in the new related document and not change or lock the source document. This add-in creates a Design Workspace command that produces a new related document from a pre-configured list of saved start document that reference the source document. The source document must be the active document and must be saved before this add-in's command can be used.
 
-When creating the new related document you may select from a configurable list of workflows. Each workflow allows a pre-saved start document to be used to create the new related document. It also pre-populates the name of the new related document to capture workflow and the mae of the source document. This makes finding and understand why the new related document was created easier.
+When creating the new related document you may select from a configurable list of workflows. Each workflow allows a pre-saved start document to be used to create the new related document. It also pre-populates the name of the new related document to capture workflow and the name of the source document. This makes finding and understand why the new related document was created easier.
 
 Here are a few examples for how you might use this add-in:
 
+### Manufacture a native Fusion 3D Design
+
+You have an existing Fusion Design and you want another team member to work on manufacturing setups and programming. By creating a related document that references the current design your team member can work in their own document without permission conflicts. In addition when you share your design you no longer have to share your private manufacturing information as it is store in its own document.
+
+In this graph we see how the add-in help create the Manufacturing Document referencing the Fusion Design you as **User A** working **Fusion 3D Design**. Tour team member as **User B** can work on the **Manufacturing Document** in parallel.
+
+```mermaid
+%%{
+init: {
+'theme':'base',
+'themeVariables': {
+'primaryColor': '#f0f0f0',
+'primaryBorderColor': '#454F61',
+'lineColor': '#59cff0',
+'tertiaryColor': '#e1ecf5',
+'fontSize': '14px'
+}
+}
+}%%
+
+graph TD
+
+a(Manufacturing Document)
+b(Fusion 3D Design)
+
+c((User A))
+d((User B))
+
+d -.-> a --"X-Ref"--> b
+c -.-> b
+```
+
 ### AnyCAD
 
-You have an existing SolidWorks document that you upload using Fusion 360 Team to you hub.
+You have an existing SolidWorks document that you upload using Fusion 360 Team to your hub.
+
 You can open this SolidWorks part in Fusion 360 Desktop client and then use this add-in to create a new referencing document for manufacturing and CNC programming.
 
 ```mermaid
+%%{
+init: {
+'theme':'base',
+'themeVariables': {
+'primaryColor': '#f0f0f0',
+'primaryBorderColor': '#454F61',
+'lineColor': '#59cff0',
+'tertiaryColor': '#e1ecf5',
+'fontSize': '14px'
+}
+}
+}%%
+
 graph TD
 
 A(SolidWorks Part)
@@ -21,23 +67,45 @@ B --"X-Ref"--> A
 
 ```
 
-Later you may need to run FEA simulations on the same SolidWorks design.
-Using the add-in you can create a new related document referencing the SolidWorks AnyCAD part.
+Any changes to the SolidWorks part can saved and your manufacturing document will associatively update when you update the the new version.
+
+> Note: AnyCAD workflows are only available when using a Team Hub and a Commercial, Education or Start Entitlement. Personal ( aka Free aka Hobby ) Entitlements do not have access to AnyCAD Workflows.
+
+Later you may need to run FEA simulations on the same SolidWorks design. Using the add-in you can create a new related document referencing the SolidWorks AnyCAD part.
 
 ```mermaid
+%%{
+init: {
+'theme':'base',
+'themeVariables': {
+'primaryColor': '#f0f0f0',
+'primaryBorderColor': '#454F61',
+'lineColor': '#59cff0',
+'tertiaryColor': '#e1ecf5',
+'fontSize': '14px'
+}
+}
+}%%
+
 graph TD
 
 A(SolidWorks Part)
 B(Manufacturing Document)
 C(Simulation Document)
 
+i((User A))
+j((User B))
+
 B --"X-Ref"--> A
 C --"X-Ref"--> A
+
+i -.-> B
+j -.-> C
 
 ```
 
 Two related documents have been created. One for Manufacturing and one for Simulation.
-Each document can have a unique user working on it an not block the others. This is very useful for teams to ensure you can have different discipline working on a design concurrently.
+Each document can have a unique user working on it in parallel. This is very useful for teams to ensure you can have different discipline working on a design concurrently.
 
 ### Render designs with a common render setup
 
@@ -45,6 +113,19 @@ Using the start document's ability to pre store information. You open a new empt
 You can define new emissive bodies as lights and store several different options for floors. In addition you setup the render defaults for exposure, HDRI Environment map, background, and camera focal settings. Defining these in the start part ensure that as you make future renderings you can have consistent look and feel to you renderings.
 
 ```mermaid
+%%{
+init: {
+'theme':'base',
+'themeVariables': {
+'primaryColor': '#f0f0f0',
+'primaryBorderColor': '#454F61',
+'lineColor': '#59cff0',
+'tertiaryColor': '#e1ecf5',
+'fontSize': '14px'
+}
+}
+}%%
+
 graph TD
 
 A(Fusion Design)
@@ -56,62 +137,12 @@ B --"X-Ref"--> A
 
 ## Multiple Start Documents
 
-To best use this add-in you should pre-create and save start documents that have information already defined in them. This allows you to automate and make smart start parts that can reduce setup for your intended workflows.
+To best use this add-in, pre-create and save start documents that have information already defined in them. This allows you to automate and make smart start parts that can reduce setup for your intended workflows.
 You can create a specific start document for each workflow and set the default naming scheme as you configure this add-in for your specific hub, team and use cases.
 
 You can choose to save as much or as little information inside each start document.
 
-**TIP:** It its always useful to save a generic empty start document and configure an plain assembly or default start document option so you can always get a simple new reference document when needed.
-
-The Alpha release is pre-configured with 6 start parts. THESE HAVE URNs ALREADY DEFINED. THESE WILL NOT WORK IN YOUR HUB.
-You must edit the the python document and configure your own start documents.
-
-The 6 defined in the Alpha release are:
-
-1. Assembly Document
-2. Manufacture Document
-3. Simulation Document
-4. Generative Document
-5. Render Document
-6. Animation Document
-
-When you select one of these, the start document is copied, saved and then your active source document is inserted. The new related document is then saved a second time automatically. This creates the needed versions to track the relationships between documents.
-
-Comments are added to the versions for clarity.
-
-### The basic relationships in a graph:
-
-```mermaid
-graph LR
-
-A(Source Part)
-B{Target Document}
-C1[Assembly Document]
-C2[Manufacture Document]
-C3[Simulation Document]
-C4[Generative Document]
-C5[Render Document]
-C6[Animation Document]
-
-B --"X-Ref"--> A
-
-subgraph "Start Documents"
-C1
-C2
-C3
-C4
-C5
-C6
-end
-
-C1 --"Copy"--> B
-C2 --"Copy"--> B
-C3 --"Copy"--> B
-C4 --"Copy"--> B
-C5 --"Copy"--> B
-C6 --"Copy"--> B
-
-```
+**TIP:** It its always useful to save a generic empty start document and configure a plain assembly or default start document option so you can always get a simple new reference document when needed.
 
 ### User interface.
 
@@ -209,8 +240,8 @@ Your Json file should look like this:
 {"PROJECT_ID":"a.1234ABCDERgh9101234ABCDERgh910","FOLDER_ID":"urn:adsk.wipprod:fs.folder:co.1234ABCDERgh910"}
 ```
 
-Note: Instead of "1234ABCDERgh910" you have your own values. **Save the JSON file** and ensure you provide it to your team members.
+> Note: Instead of "1234ABCDERgh910" you have your own values. **Save the JSON file** and ensure you provide it to your team members.
 
-You are now ready to use the Related Documents Add-In. You can add documents to the folder you chose to store the start documents. Each time the command is run it will check of new documents and update dynamicaly. This check can take a second or so.
+You are now ready to use the Related Documents Add-In. You can add documents to the folder you chose to store the start documents. Each time the command is run it will index the folder's documents and update. This check can take a second or so.
 
-**TIP:** If you save your start documents with the workspace you want to default to, this workspace will automatically default creating new related documents from these start documents.
+**TIP:** If you save your start documents with the workspace you want to default to, this workspace will automatically be active when the document opens.
