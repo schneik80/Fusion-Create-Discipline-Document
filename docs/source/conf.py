@@ -2,9 +2,9 @@
 
 # -- Project information
 
-project = 'Lumache'
-copyright = '2021, Graziella'
-author = 'Graziella'
+project = 'Fusion-Create Discipline Document'
+copyright = '2023, Schneik80'
+author = 'Schneik'
 
 release = '0.1'
 version = '0.1.0'
