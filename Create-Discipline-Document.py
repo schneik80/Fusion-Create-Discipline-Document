@@ -7,7 +7,6 @@ import adsk.fusion
 import traceback
 import os
 import os.path
-import gettext
 import json
 
 # Global Command inputs
@@ -29,9 +28,6 @@ myDocsDict = ()
 
 # handlers
 handlers = []
-
-# Support localization
-_ = None
 
 # Load project and folder from json
 def loadProject(__file__):
@@ -76,40 +72,11 @@ def loadProject(__file__):
 
 data = loadProject(__file__)
 
-def getUserLanguage():
-    app = adsk.core.Application.get()
-
-    return {
-        adsk.core.UserLanguages.ChinesePRCLanguage: "zh-CN",
-        adsk.core.UserLanguages.ChineseTaiwanLanguage: "zh-TW",
-        adsk.core.UserLanguages.CzechLanguage: "cs-CZ",
-        adsk.core.UserLanguages.EnglishLanguage: "en-US",
-        adsk.core.UserLanguages.FrenchLanguage: "fr-FR",
-        adsk.core.UserLanguages.GermanLanguage: "de-DE",
-        adsk.core.UserLanguages.HungarianLanguage: "hu-HU",
-        adsk.core.UserLanguages.ItalianLanguage: "it-IT",
-        adsk.core.UserLanguages.JapaneseLanguage: "ja-JP",
-        adsk.core.UserLanguages.KoreanLanguage: "ko-KR",
-        adsk.core.UserLanguages.PolishLanguage: "pl-PL",
-        adsk.core.UserLanguages.PortugueseBrazilianLanguage: "pt-BR",
-        adsk.core.UserLanguages.RussianLanguage: "ru-RU",
-        adsk.core.UserLanguages.SpanishLanguage: "es-ES",
-    }[app.preferences.generalPreferences.userLanguage]
-
-
-# Get loc string by language
-def getLocStrings():
-    currentDir = os.path.dirname(os.path.realpath(__file__))
-    return gettext.translation(
-        "resource", currentDir, [getUserLanguage(), "en-US"]
-    ).gettext
-
-
 def commandDefinitionById(id):
     app = adsk.core.Application.get()
     ui = app.userInterface
     if not id:
-        ui.messageBox(_("commandDefinition id is not specified"))
+        ui.messageBox("commandDefinition id is not specified")
         return None
     commandDefinitions_ = ui.commandDefinitions
     commandDefinition_ = commandDefinitions_.itemById(id)
@@ -120,7 +87,7 @@ def commandControlByIdForPanel(id):
     app = adsk.core.Application.get()
     ui = app.userInterface
     if not id:
-        ui.messageBox(_("commandControl id is not specified"))
+        ui.messageBox("commandControl id is not specified")
         return None
     workspaces_ = ui.workspaces
     modelingWorkspace_ = workspaces_.itemById("FusionSolidEnvironment")
@@ -136,7 +103,7 @@ def destroyObject(uiObj, tobeDeleteObj):
         if tobeDeleteObj.isValid:
             tobeDeleteObj.deleteMe()
         else:
-            uiObj.messageBox(_(tobeDeleteObj + " is not a valid object"))
+            uiObj.messageBox(tobeDeleteObj + " is not a valid object")
 
 class CommandExecuteHandler(adsk.core.CommandEventHandler):
     def __init__(self):
@@ -175,9 +142,7 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
 
         except:
             if ui:
-                ui.messageBox(
-                    _("command executed failed: {}").format(traceback.format_exc())
-                )
+                ui.messageBox("command executed failed: {}".format(traceback.format_exc()))
 
 class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
     def __init__(self):
@@ -201,27 +166,26 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             commandInputs_ = cmd.commandInputs
 
             dropDownCommandInput = commandInputs_.addDropDownCommandInput(
-                "dropDownCommandInput",
-                _("Type"),
+                "dropDownCommandInput","Type",
                 adsk.core.DropDownStyles.LabeledIconDropDownStyle,
             )
 
             dropDownItems_ = dropDownCommandInput.listItems
             for key, val in myDocsDict.items():
                 if isinstance(val, dict):
-                    dropDownItems_.add(_(val.get("name")), True),
+                    dropDownItems_.add(val.get("name"), True),
                     docActive = app.activeDocument
                     doc_with_ver = docActive.name
                     docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
                     docTitle = docSeed + " -  - " + (val.get("name"))
 
             boolCommandInput = commandInputs_.addBoolValueInput(
-                "boolvalueInput_", _("Auto-Name"), True
+                "boolvalueInput_", "Auto-Name", True
             )
             boolCommandInput.value = True
 
             stringDocName = commandInputs_.addStringValueInput(
-                "stringValueInput_", _("Name"), _(docTitle)
+                "stringValueInput_", "Name", docTitle
             )
             stringDocName.isEnabled = False
 
@@ -270,7 +234,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
         except:
             if ui:
                 ui.messageBox(
-                    _("Input changed event failed: {}").format(traceback.format_exc())
+                    "Input changed event failed: {}".format(traceback.format_exc())
                 )
 
 def run(context):
@@ -278,10 +242,7 @@ def run(context):
     try:
         app = adsk.core.Application.get()
         ui = app.userInterface
-        global _
-        _ = getLocStrings()
-
-        commandName = _(globalCommand)
+        commandName = globalCommand
         commandDescription = globalCommand
         commandResources = "./resources"
         #iconResources = "./resources"
@@ -314,9 +275,7 @@ def run(context):
 
     except:
         if ui:
-            ui.messageBox(
-                _("Failed to start Add-In: {}").format(traceback.format_exc())
-            )
+            ui.messageBox("Failed to start Add-In: {}".format(traceback.format_exc()))
 
 
 def stop(context):
@@ -339,4 +298,4 @@ def stop(context):
 
     except:
         if ui:
-            ui.messageBox(_("Failed to stop Add-In: {}").format(traceback.format_exc()))
+            ui.messageBox("Failed to stop Add-In: {}").format(traceback.format_exc())
