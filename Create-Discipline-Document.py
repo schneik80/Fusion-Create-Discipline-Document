@@ -33,10 +33,7 @@ handlers = []
 def loadProject(__file__):
     my_addin_path = os.path.dirname(os.path.realpath(__file__))
     my_json_path = os.path.join(my_addin_path, "data.json")
-    global data
-    global docSeed
-    global docTitle
-    global myDocsDict
+    global data, docSeed, docTitle, myDocsDict
     
     with open(my_json_path) as json_file:
         data = json.load(json_file)
@@ -136,9 +133,9 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
 
             docNew.save("Auto saved by related data add-in") # Save new doc and add boiler plate comment
 
-            doc_urn=""
-            docSeed = ""
-            docTitle=""
+#             doc_urn=""
+#             docSeed = ""
+#             docTitle=""
 
         except:
             if ui:
@@ -149,7 +146,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
         super().__init__()
 
     def notify(self, args):
-        global docSeed
+        global docSeed, doc_urn
         try:
             cmd = args.command
             cmd.helpFile = "help.html"
@@ -178,6 +175,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
                     doc_with_ver = docActive.name
                     docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
                     docTitle = docSeed + " -  - " + (val.get("name"))
+                    doc_urn = val.get("urn")
 
             boolCommandInput = commandInputs_.addBoolValueInput(
                 "boolvalueInput_", "Auto-Name", True
@@ -202,9 +200,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
     def notify(self, args):
         try:
             cmdInput = args.input
-            global doc_urn
-            global docTitle
-            global docSeed
+            global doc_urn, docTitle, docSeed
             stringDocname = args.inputs.itemById("stringValueInput_")
 
             # handle the combobox change event
