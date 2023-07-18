@@ -50,11 +50,11 @@ def loadProject(__file__):
     doc_with_ver = docActive.name
     docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
 
-    myDocsDict = {}
+    myDocsDictUnsorted = {}
     for data_file in my_folder.dataFiles:
         if data_file.fileExtension == "f3d":
             dname = data_file.name + "dict"
-            myDocsDict.update(
+            myDocsDictUnsorted.update(
                 {
                     dname: {
                         "name": data_file.name,
@@ -62,7 +62,9 @@ def loadProject(__file__):
                     }
                 }
             )
-            print(myDocsDict)
+        
+    myDocsDict = dict(sorted(myDocsDictUnsorted.items()))
+    print(myDocsDict)
     ...
 
     return data
