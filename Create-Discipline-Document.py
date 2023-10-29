@@ -44,7 +44,13 @@ def loadProject(__file__):
     #ui = app.userInterface
     my_hub = app.data.activeHub
     my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
+    if my_project is None:
+        ui.messageBox(f"Project with id:{data['PROJECT_ID']} not found, review the readme file for instructions on how to set up the add-in.")
+        return data
     my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
+    if my_folder is None:
+        ui.messageBox(f"Folder with id:{data['FOLDER_ID']} not found, review the readme file for instructions on how to set up the add-in.")
+        return data
 
     docActive = app.activeDocument
     doc_with_ver = docActive.name
