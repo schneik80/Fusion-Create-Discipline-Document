@@ -166,6 +166,8 @@ Click **OK** and the new related document is created and your source document is
 
 ## How to find your own documents URNs
 
+> **NOTE:** If you attempt to run the command without editing the settings as sown below, the add-in will throw an error.
+
 Open the document you want to use as a start part.
 
 From the application menu turn on the Text Command Pallet
@@ -245,3 +247,9 @@ Your Json file should look like this:
 You are now ready to use the Related Documents Add-In. You can add documents to the folder you chose to store the start documents. Each time the command is run it will index the folder's documents and update. This check can take a second or so.
 
 **TIP:** If you save your start documents with the workspace you want to default to, this workspace will automatically be active when the document opens.
+
+---
+
+Thanks to contributions from:
+
+- [TheEppicJR](https://github.com/TheEppicJR)
