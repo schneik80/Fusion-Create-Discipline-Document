@@ -9,15 +9,11 @@ import os
 import os.path
 import json
 
-# Global Command inputs
 app = adsk.core.Application.get()
 ui = app.userInterface
 dropDownCommandInput = adsk.core.DropDownCommandInput.cast(None)
 boolvalueInput = adsk.core.BoolValueCommandInput.cast(None)
 stringDocname = adsk.core.StringValueCommandInput.cast(None)
-globalCommand = " Create Related Document"
-panelId = "SolidCreatePanel"
-commandIdOnPanel = globalCommand
 my_hub = app.data.activeHub
 
 # create doc name values
@@ -26,58 +22,73 @@ docTitle = ""
 docSeed = ""
 myDocsDict = ()
 
+globalCommand = " Create Related Document"
+panelId = "SolidCreatePanel"
+commandIdOnPanel = globalCommand
+
 # local_handlers
 local_handlers = []
 
 
 # Load project and folder from json
 def loadProject(__file__):
+    global app, data, myDocsDict
+
     my_addin_path = os.path.dirname(os.path.realpath(__file__))
-    my_json_path = os.path.join(my_addin_path, "data.json")
-    global data, docSeed, docTitle, myDocsDict
+    my_projectfolder_json_path = os.path.join(my_addin_path, "data.json")
+    my_docs_json_path = os.path.join(my_addin_path, "docs.json")
 
-    with open(my_json_path) as json_file:
-        data = json.load(json_file)
-        print(data)
+    # check if the documents json has been created
+    docsExist = os.path.isfile(my_docs_json_path)
 
-    app = adsk.core.Application.get()
-    # ui = app.userInterface
-    my_hub = app.data.activeHub
-    my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
-    if my_project is None:
-        ui.messageBox(
-            f"Project with id:{data['PROJECT_ID']} not found, review the readme file for instructions on how to set up the add-in."
-        )
-        return data
-    my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
-    if my_folder is None:
-        ui.messageBox(
-            f"Folder with id:{data['FOLDER_ID']} not found, review the readme file for instructions on how to set up the add-in."
-        )
-        return data
+    if docsExist == False:
 
-    docActive = app.activeDocument
-    doc_with_ver = docActive.name
-    docSeed = doc_with_ver.rsplit(" ", 1)[0]  # trim version
+        with open(my_projectfolder_json_path) as json_file:
+            data = json.load(json_file)
 
-    myDocsDictUnsorted = {}
-    for data_file in my_folder.dataFiles:
-        if data_file.fileExtension == "f3d":
-            dname = data_file.name + "dict"
-            myDocsDictUnsorted.update(
-                {
-                    dname: {
-                        "name": data_file.name,
-                        "urn": data_file.id,
-                    }
-                }
+        app = adsk.core.Application.get()
+        # ui = app.userInterface
+        my_hub = app.data.activeHub
+        my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
+        if my_project is None:
+            ui.messageBox(
+                f"Project with id:{data['PROJECT_ID']} not found, review the readme file for instructions on how to set up the add-in."
             )
+            return data
 
-    myDocsDict = dict(sorted(myDocsDictUnsorted.items()))
-    print(myDocsDict)
-    ...
+        my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
+        if my_folder is None:
+            ui.messageBox(
+                f"Folder with id:{data['FOLDER_ID']} not found, review the readme file for instructions on how to set up the add-in."
+            )
+            return data
 
-    return data
+        myDocsDictUnsorted = {}
+        for data_file in my_folder.dataFiles:
+            if data_file.fileExtension == "f3d":
+                dname = data_file.name + "dict"
+                myDocsDictUnsorted.update(
+                    {
+                        dname: {
+                            "name": data_file.name,
+                            "urn": data_file.id,
+                        }
+                    }
+                )
+
+        myDocsDict = dict(sorted(myDocsDictUnsorted.items()))
+        ...
+
+        myDocsJson = json.dumps(myDocsDict)
+        with open(my_docs_json_path, "w") as f:
+            f.write(myDocsJson)
+
+    else:
+
+        with open(my_docs_json_path) as json_file:
+            myDocsDict = json.load(json_file)
+
+        return
 
 
 data = loadProject(__file__)
@@ -150,10 +161,6 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
                 "Auto saved by related data add-in"
             )  # Save new doc and add boiler plate comment
 
-        #             doc_urn=""
-        #             docSeed = ""
-        #             docTitle=""
-
         except:
             if ui:
                 ui.messageBox(
@@ -167,6 +174,18 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
 
     def notify(self, args):
         global docSeed, doc_urn
+
+        if app.activeDocument.isSaved == False:
+            returnValue = ui.messageBox(
+                "Related Documents can only be created from saved Documents.\nPlease save this document and try again",
+                "Document Not Saved",
+                0,
+                3,
+            )
+
+        if returnValue == 0:
+            return
+
         try:
             cmd = args.command
             cmd.helpFile = "help.html"
@@ -220,6 +239,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
         super().__init__()
 
     def notify(self, args):
+
         try:
             cmdInput = args.input
             global doc_urn, docTitle, docSeed
