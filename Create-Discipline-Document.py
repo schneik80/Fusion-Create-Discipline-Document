@@ -174,7 +174,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
 
     def notify(self, args):
         global docSeed, doc_urn
-
+        returnValue = 1
         if app.activeDocument.isSaved == False:
             returnValue = ui.messageBox(
                 "Related Documents can only be created from saved Documents.\nPlease save this document and try again",
