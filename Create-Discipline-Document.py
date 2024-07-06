@@ -1,7 +1,7 @@
 # Author-schneik.
 # Description-This is add-in to take the active design document tab and insert into a new document as a child. the new document is named based on a user selection to help capture intent.
 
-from pydoc import doc
+# from pydoc import doc
 import adsk.core
 import adsk.fusion
 import traceback
@@ -23,33 +23,37 @@ my_hub = app.data.activeHub
 # create doc name values
 docSeed = ""
 docTitle = ""
-docSeed =""
+docSeed = ""
 myDocsDict = ()
 
-# handlers
-handlers = []
+# local_handlers
+local_handlers = []
+
 
 # Load project and folder from json
 def loadProject(__file__):
     my_addin_path = os.path.dirname(os.path.realpath(__file__))
     my_json_path = os.path.join(my_addin_path, "data.json")
     global data, docSeed, docTitle, myDocsDict
-    
+
     with open(my_json_path) as json_file:
         data = json.load(json_file)
         print(data)
-    
 
     app = adsk.core.Application.get()
-    #ui = app.userInterface
+    # ui = app.userInterface
     my_hub = app.data.activeHub
     my_project = my_hub.dataProjects.itemById(data["PROJECT_ID"])
     if my_project is None:
-        ui.messageBox(f"Project with id:{data['PROJECT_ID']} not found, review the readme file for instructions on how to set up the add-in.")
+        ui.messageBox(
+            f"Project with id:{data['PROJECT_ID']} not found, review the readme file for instructions on how to set up the add-in."
+        )
         return data
     my_folder = my_project.rootFolder.dataFolders.itemById(data["FOLDER_ID"])
     if my_folder is None:
-        ui.messageBox(f"Folder with id:{data['FOLDER_ID']} not found, review the readme file for instructions on how to set up the add-in.")
+        ui.messageBox(
+            f"Folder with id:{data['FOLDER_ID']} not found, review the readme file for instructions on how to set up the add-in."
+        )
         return data
 
     docActive = app.activeDocument
@@ -68,14 +72,16 @@ def loadProject(__file__):
                     }
                 }
             )
-        
+
     myDocsDict = dict(sorted(myDocsDictUnsorted.items()))
     print(myDocsDict)
     ...
 
     return data
 
+
 data = loadProject(__file__)
+
 
 def commandDefinitionById(id):
     app = adsk.core.Application.get()
@@ -110,6 +116,7 @@ def destroyObject(uiObj, tobeDeleteObj):
         else:
             uiObj.messageBox(tobeDeleteObj + " is not a valid object")
 
+
 class CommandExecuteHandler(adsk.core.CommandEventHandler):
     def __init__(self):
         super().__init__()
@@ -117,7 +124,7 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
     def notify(self, args: adsk.core.CommandEventArgs):
         global doc_urn, docSeed, docTitle
         try:
-            
+
             docActiveUrn = app.data.findFileById(doc_urn)
             docActive = app.activeDocument
             docTitleinput: adsk.core.StringValueCommandInput = (
@@ -139,15 +146,20 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
                 docActive.dataFile, transform, True
             )
 
-            docNew.save("Auto saved by related data add-in") # Save new doc and add boiler plate comment
+            docNew.save(
+                "Auto saved by related data add-in"
+            )  # Save new doc and add boiler plate comment
 
-#             doc_urn=""
-#             docSeed = ""
-#             docTitle=""
+        #             doc_urn=""
+        #             docSeed = ""
+        #             docTitle=""
 
         except:
             if ui:
-                ui.messageBox("command executed failed: {}".format(traceback.format_exc()))
+                ui.messageBox(
+                    "command executed failed: {}".format(traceback.format_exc())
+                )
+
 
 class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
     def __init__(self):
@@ -165,13 +177,14 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
             onInputChanged = InputChangedHandler()
             cmd.inputChanged.add(onInputChanged)
             # keep the handler referenced beyond this function
-            handlers.append(onExecute)
-            handlers.append(onInputChanged)
+            local_handlers.append(onExecute)
+            local_handlers.append(onInputChanged)
 
             commandInputs_ = cmd.commandInputs
 
             dropDownCommandInput = commandInputs_.addDropDownCommandInput(
-                "dropDownCommandInput","Type",
+                "dropDownCommandInput",
+                "Type",
                 adsk.core.DropDownStyles.LabeledIconDropDownStyle,
             )
 
@@ -200,6 +213,7 @@ class CommandCreatedEventHandlerPanel(adsk.core.CommandCreatedEventHandler):
                 ui.messageBox(
                     _("Panel command created failed: {}").format(traceback.format_exc())
                 )
+
 
 class InputChangedHandler(adsk.core.InputChangedEventHandler):
     def __init__(self):
@@ -241,6 +255,7 @@ class InputChangedHandler(adsk.core.InputChangedEventHandler):
                     "Input changed event failed: {}".format(traceback.format_exc())
                 )
 
+
 def run(context):
     ui = None
     try:
@@ -249,7 +264,7 @@ def run(context):
         commandName = globalCommand
         commandDescription = globalCommand
         commandResources = "./resources"
-        #iconResources = "./resources"
+        # iconResources = "./resources"
 
         commandDefinitions_ = ui.commandDefinitions
 
@@ -271,7 +286,7 @@ def run(context):
             onCommandCreated = CommandCreatedEventHandlerPanel()
             commandDefinitionPanel_.commandCreated.add(onCommandCreated)
             # keep the handler referenced beyond this function
-            handlers.append(onCommandCreated)
+            local_handlers.append(onCommandCreated)
             toolbarControlPanel_ = toolbarControlsPanel_.addCommand(
                 commandDefinitionPanel_
             )
