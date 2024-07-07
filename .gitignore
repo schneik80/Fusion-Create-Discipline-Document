@@ -128,3 +128,4 @@ dmypy.json
 .vscode/
 .DS_Store
 docs.json
+data.json
